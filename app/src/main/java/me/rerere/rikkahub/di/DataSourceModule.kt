@@ -193,7 +193,7 @@ val dataSourceModule = module {
             .addInterceptor(HttpLoggingInterceptor().apply {
                 level = HttpLoggingInterceptor.Level.HEADERS
             })
-            .build().also { SearchService.init(it) }
+            .build().also { SearchService.init(it, get()) }
     }
 
     single {
@@ -201,7 +201,7 @@ val dataSourceModule = module {
     }
 
     single {
-        ProviderManager(client = get())
+        ProviderManager(client = get(), context = get())
     }
 
     single {
