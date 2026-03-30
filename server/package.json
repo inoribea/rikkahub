@@ -17,7 +17,7 @@
     "@vercel/postgres": "^0.10.0",
     "date-fns": "^4.1.0",
     "drizzle-orm": "^0.39.0",
-    "hono": "^4.7.0",
+    "hono": "^4.12.9",
     "jose": "^6.0.0",
     "nanoid": "^5.1.0",
     "postgres": "^3.4.5",
@@ -27,5 +27,8 @@
     "@types/node": "^22.0.0",
     "drizzle-kit": "^0.30.0",
     "typescript": "^5.7.0"
+  },
+  "engines": {
+    "node": ">=20"
   }
 }

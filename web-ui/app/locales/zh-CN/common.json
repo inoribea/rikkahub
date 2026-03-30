@@ -104,5 +104,25 @@
     "unlock": "解锁",
     "unlocking": "正在解锁...",
     "unlock_failed": "Web API 解锁失败。"
+  },
+  "server_config": {
+    "title": "服务器配置",
+    "description": "配置后端 API 服务器地址。当部署在 Vercel 等平台时，需要指定后端服务器地址。",
+    "use_custom_url": "使用自定义 API 地址",
+    "api_url_label": "API 服务器地址",
+    "url_hint": "输入后端服务器地址，例如：http://192.168.1.100:8080",
+    "url_required": "请输入 API 地址",
+    "invalid_url": "请输入有效的 URL 地址（以 http:// 或 https:// 开头）",
+    "test_connection": "测试连接",
+    "testing": "测试中...",
+    "connection_success": "连接成功",
+    "connection_success_auth": "连接成功（需要认证）",
+    "connection_failed": "连接失败（状态码：{{status}}）",
+    "connection_error": "连接失败，请检查地址是否正确",
+    "reset": "重置",
+    "cancel": "取消",
+    "save": "保存",
+    "saved": "配置已保存，正在刷新页面...",
+    "env_configured": "已通过环境变量配置"
   }
 }

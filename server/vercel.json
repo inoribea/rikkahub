@@ -1,6 +1,16 @@
 {
-  "version": 2,
+  "$schema": "https://openapi.vercel.sh/vercel.json",
+  "buildCommand": "bun run build",
+  "installCommand": "bun install",
+  "framework": null,
+  "regions": ["sin1"],
+  "functions": {
+    "api/index.ts": {
+      "runtime": "bun@1"
+    }
+  },
   "rewrites": [
-    { "source": "/api/(.*)", "destination": "/api" }
+    { "source": "/api/(.*)", "destination": "/api/index.ts" },
+    { "source": "/health", "destination": "/api/index.ts" }
   ]
 }

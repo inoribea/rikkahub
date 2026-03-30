@@ -20,6 +20,7 @@ import {
   LogOut,
   Sun,
   Trash2,
+  Server,
 } from "lucide-react";
 import { useTranslation } from "react-i18next";
 
@@ -66,6 +67,7 @@ import {
 } from "~/components/theme-provider";
 import { ConversationSearchButton } from "~/components/conversation-search-button";
 import { CustomThemeDialog } from "~/components/custom-theme-dialog";
+import { ServerConfigDialog } from "~/components/server-config-dialog";
 import { getAssistantDisplayName } from "~/lib/display";
 import { clearWebAuthToken } from "~/services/api";
 import type { AssistantAvatar, AssistantProfile, AssistantTag, ConversationListDto } from "~/types";
@@ -544,6 +546,7 @@ export const ConversationSidebar = React.memo(({
 
   const [pickerOpen, setPickerOpen] = React.useState(false);
   const [customThemeOpen, setCustomThemeOpen] = React.useState(false);
+  const [serverConfigOpen, setServerConfigOpen] = React.useState(false);
   const [selectedTagIds, setSelectedTagIds] = React.useState<string[]>([]);
   const [switchingAssistantId, setSwitchingAssistantId] = React.useState<string | null>(null);
   const [switchError, setSwitchError] = React.useState<string | null>(null);
@@ -686,19 +689,31 @@ export const ConversationSidebar = React.memo(({
             scrollTargetId="conversationScrollTarget"
           >
             <SidebarMenu>
-              {loading && (
-                <SidebarMenuItem>
-                  <div className="px-2 py-2 text-xs text-muted-foreground">
-                    {t("conversation_sidebar.loading")}
-                  </div>
-                </SidebarMenuItem>
-              )}
-              {error && (
-                <SidebarMenuItem>
-                  <div className="px-2 py-2 text-xs text-destructive">{error}</div>
-                </SidebarMenuItem>
-              )}
-              {!loading && !error && conversations.length === 0 && (
+{loading && (
+                  <SidebarMenuItem>
+                    <div className="px-2 py-2 text-xs text-muted-foreground">
+                      {t("conversation_sidebar.loading")}
+                    </div>
+                  </SidebarMenuItem>
+                )}
+                {error && (
+                  <SidebarMenuItem>
+                    <div className="space-y-2 px-2 py-2">
+                      <div className="text-xs text-destructive">{error}</div>
+                      <Button
+                        type="button"
+                        variant="outline"
+                        size="sm"
+                        className="w-full"
+                        onClick={() => setServerConfigOpen(true)}
+                      >
+                        <Server className="size-4" />
+                        {t("server_config.title")}
+                      </Button>
+                    </div>
+                  </SidebarMenuItem>
+                )}
+                {!loading && !error && conversations.length === 0 && (
                 <SidebarMenuItem>
                   <div className="px-2 py-2 text-xs text-muted-foreground">
                     {t("conversation_sidebar.no_conversations")}
@@ -869,6 +884,11 @@ export const ConversationSidebar = React.memo(({
           onSave={handleCustomThemeSave}
         />
 
+        <ServerConfigDialog
+          open={serverConfigOpen}
+          onOpenChange={setServerConfigOpen}
+        />
+
         <div className="flex items-center gap-2">
           {webAuthEnabled && (
             <Button
@@ -883,6 +903,18 @@ export const ConversationSidebar = React.memo(({
               <LogOut className="size-4" />
             </Button>
           )}
+
+          <Button
+            variant="outline"
+            size="icon-sm"
+            className="text-foreground"
+            type="button"
+            onClick={() => setServerConfigOpen(true)}
+            aria-label={t("server_config.title")}
+            title={t("server_config.title")}
+          >
+            <Server className="size-4" />
+          </Button>
 
           <LanguageSwitcher />
 

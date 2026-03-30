@@ -104,5 +104,25 @@
     "unlock": "Unlock",
     "unlocking": "Unlocking...",
     "unlock_failed": "Failed to unlock Web API access."
+  },
+  "server_config": {
+    "title": "Server Configuration",
+    "description": "Configure the backend API server address. When deploying on platforms like Vercel, you need to specify the backend server address.",
+    "use_custom_url": "Use custom API URL",
+    "api_url_label": "API Server URL",
+    "url_hint": "Enter the backend server address, e.g., http://192.168.1.100:8080",
+    "url_required": "Please enter an API URL",
+    "invalid_url": "Please enter a valid URL (starting with http:// or https://)",
+    "test_connection": "Test Connection",
+    "testing": "Testing...",
+    "connection_success": "Connection successful",
+    "connection_success_auth": "Connection successful (authentication required)",
+    "connection_failed": "Connection failed (status: {{status}})",
+    "connection_error": "Connection failed. Please check if the URL is correct.",
+    "reset": "Reset",
+    "cancel": "Cancel",
+    "save": "Save",
+    "saved": "Configuration saved. Refreshing...",
+    "env_configured": "Configured via environment variable"
   }
 }

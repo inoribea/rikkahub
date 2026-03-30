@@ -1,4 +1,5 @@
 import ky, { type Options, HTTPError } from "ky";
+import { getEffectiveApiBaseUrl } from "~/stores/server-config";
 
 interface ErrorResponse {
   error: string;
@@ -69,19 +70,60 @@ function dispatchWebAuthRequired(detail: WebAuthRequiredEventDetail) {
   window.dispatchEvent(new CustomEvent<WebAuthRequiredEventDetail>(WEB_AUTH_REQUIRED_EVENT, { detail }));
 }
 
-const kyInstance = ky.create({
-  prefixUrl: "/api",
-  timeout: 30000,
-  hooks: {
-    beforeRequest: [
-      (request) => {
-        const token = getValidWebAuthToken();
-        if (!token || request.headers.has("Authorization")) return;
-        request.headers.set("Authorization", `Bearer ${token}`);
-      },
-    ],
-  },
-});
+/**
+ * Create ky instance with dynamic base URL
+ * The base URL is read from server config on each request to support runtime changes
+ */
+function createKyInstance(): typeof ky {
+  return ky.create({
+    // We use absolute URLs instead of prefixUrl to support dynamic base URLs
+    timeout: 30000,
+    hooks: {
+      beforeRequest: [
+        (request) => {
+          const token = getValidWebAuthToken();
+          if (!token || request.headers.has("Authorization")) return;
+          request.headers.set("Authorization", `Bearer ${token}`);
+        },
+      ],
+    },
+  });
+}
+
+const kyInstance = createKyInstance();
+
+/**
+ * Build full URL for API request
+ * Uses custom base URL if configured, otherwise uses relative path
+ */
+function buildApiUrl(path: string, searchParams?: Record<string, string | number | boolean | undefined>): string {
+  const baseUrl = getEffectiveApiBaseUrl();
+  const normalizedPath = path.startsWith("/") ? path : `/${path}`;
+  
+  let url: string;
+  if (baseUrl.startsWith("http://") || baseUrl.startsWith("https://")) {
+    // Absolute URL
+    url = `${baseUrl}${normalizedPath}`;
+  } else {
+    // Relative URL
+    url = `${baseUrl}${normalizedPath}`;
+  }
+  
+  if (searchParams) {
+    const params = new URLSearchParams();
+    for (const [key, value] of Object.entries(searchParams)) {
+      if (value !== undefined) {
+        params.set(key, String(value));
+      }
+    }
+    const queryString = params.toString();
+    if (queryString) {
+      url += `?${queryString}`;
+    }
+  }
+  
+  return url;
+}
 
 async function handleError(error: unknown): Promise<never> {
   if (error instanceof HTTPError) {
@@ -143,48 +185,51 @@ export function appendWebAuthQuery(url: string): string {
   return hash ? `${nextPath}#${hash}` : nextPath;
 }
 
-/**
- * API client with unwrapped response data
- */
 const api = {
-  async get<T>(url: string, options?: Options): Promise<T> {
+  async get<T>(url: string, options?: Options & { searchParams?: Record<string, string | number | boolean | undefined> }): Promise<T> {
     try {
-      return await kyInstance.get(url, options).json<T>();
+      const fullUrl = buildApiUrl(url, options?.searchParams);
+      return await kyInstance.get(fullUrl, options).json<T>();
     } catch (error) {
       return handleError(error);
     }
   },
   async post<T>(url: string, data?: unknown, options?: Options): Promise<T> {
     try {
-      return await kyInstance.post(url, { ...options, json: data }).json<T>();
+      const fullUrl = buildApiUrl(url);
+      return await kyInstance.post(fullUrl, { ...options, json: data }).json<T>();
     } catch (error) {
       return handleError(error);
     }
   },
   async postMultipart<T>(url: string, formData: FormData, options?: Options): Promise<T> {
     try {
-      return await kyInstance.post(url, { ...options, body: formData }).json<T>();
+      const fullUrl = buildApiUrl(url);
+      return await kyInstance.post(fullUrl, { ...options, body: formData }).json<T>();
     } catch (error) {
       return handleError(error);
     }
   },
   async put<T>(url: string, data?: unknown, options?: Options): Promise<T> {
     try {
-      return await kyInstance.put(url, { ...options, json: data }).json<T>();
+      const fullUrl = buildApiUrl(url);
+      return await kyInstance.put(fullUrl, { ...options, json: data }).json<T>();
     } catch (error) {
       return handleError(error);
     }
   },
   async patch<T>(url: string, data?: unknown, options?: Options): Promise<T> {
     try {
-      return await kyInstance.patch(url, { ...options, json: data }).json<T>();
+      const fullUrl = buildApiUrl(url);
+      return await kyInstance.patch(fullUrl, { ...options, json: data }).json<T>();
     } catch (error) {
       return handleError(error);
     }
   },
   async delete<T>(url: string, options?: Options): Promise<T> {
     try {
-      return await kyInstance.delete(url, options).json<T>();
+      const fullUrl = buildApiUrl(url);
+      return await kyInstance.delete(fullUrl, options).json<T>();
     } catch (error) {
       return handleError(error);
     }
@@ -210,9 +255,6 @@ export interface SSECallbacks<T> {
   onClose?: () => void;
 }
 
-/**
- * Create an SSE connection using ky (supports auth headers)
- */
 async function sse<T>(
   url: string,
   callbacks: SSECallbacks<T>,
@@ -221,7 +263,8 @@ async function sse<T>(
   let reader: ReadableStreamDefaultReader<Uint8Array> | undefined;
 
   try {
-    const response = await kyInstance.get(url, {
+    const fullUrl = buildApiUrl(url);
+    const response = await kyInstance.get(fullUrl, {
       ...options,
       headers: {
         ...options?.headers,
@@ -292,5 +335,5 @@ async function sse<T>(
   }
 }
 
-export { sse };
+export { sse, buildApiUrl };
 export default api;
