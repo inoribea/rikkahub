@@ -1,0 +1,13 @@
+services:
+  rikkahub:
+    build: .
+    ports:
+      - "8080:8080"
+    volumes:
+      - rikkahub-data:/data
+    environment:
+      - PORT=8080
+      - DB_PATH=/data/rikkahub.db
+
+volumes:
+  rikkahub-data:
